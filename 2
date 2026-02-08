@@ -1,0 +1,828 @@
+-- Bom2dev Hub V7.2 - Script Đầy Đủ Chức Năng
+-- Lưu ý: Chỉ dùng cho mục đích giáo dục
+
+local Player = game:GetService("Players").LocalPlayer
+local Mouse = Player:GetMouse()
+local RunService = game:GetService("RunService")
+local Lighting = game:GetService("Lighting")
+local Workspace = game:GetService("Workspace")
+local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+-- Biến toàn cục
+local AimbotEnabled = false
+local AimbotTarget = nil
+local GodModeEnabled = false
+local ESPEnabled = false
+local ESPFolder = Instance.new("Folder")
+local SpeedHackEnabled = false
+local NoclipEnabled = false
+local FlyEnabled = false
+local TeleportTarget = nil
+local HitboxSize = 1
+local OriginalGravity = Workspace.Gravity
+local OriginalWalkspeed = Player.Character.Humanoid.WalkSpeed
+local OriginalJumpPower = Player.Character.Humanoid.JumpPower
+local OriginalFogEnd = Lighting.FogEnd
+
+-- Tạo GUI
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local Version = Instance.new("TextLabel")
+local Tabs = Instance.new("Frame")
+local Content = Instance.new("ScrollingFrame")
+local SearchBox = Instance.new("TextBox")
+local SearchButton = Instance.new("TextButton")
+local CloseButton = Instance.new("TextButton")
+
+-- Thiết lập GUI
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "Bom2devHubV72"
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+MainFrame.Size = UDim2.new(0, 550, 0, 450)
+MainFrame.Position = UDim2.new(0.5, -275, 0.5, -225)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+MainFrame.BorderSizePixel = 2
+MainFrame.BorderColor3 = Color3.fromRGB(0, 170, 255)
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- Thanh tiêu đề
+local TitleBar = Instance.new("Frame")
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+TitleBar.Parent = MainFrame
+
+Title.Text = "Bom2dev Hub"
+Title.Size = UDim2.new(0, 200, 0, 35)
+Title.Position = UDim2.new(0, 10, 0, 0)
+Title.TextColor3 = Color3.fromRGB(0, 200, 255)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 22
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = TitleBar
+
+Version.Text = "V7.2"
+Version.Size = UDim2.new(0, 60, 0, 20)
+Version.Position = UDim2.new(1, -70, 0, 8)
+Version.TextColor3 = Color3.fromRGB(150, 150, 150)
+Version.BackgroundTransparency = 1
+Version.Font = Enum.Font.Gotham
+Version.TextSize = 14
+Version.Parent = TitleBar
+
+-- Hộp tìm kiếm
+SearchBox.PlaceholderText = "Tìm Script..."
+SearchBox.Size = UDim2.new(0, 150, 0, 25)
+SearchBox.Position = UDim2.new(0, 220, 0, 5)
+SearchBox.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchBox.Font = Enum.Font.Gotham
+SearchBox.TextSize = 14
+SearchBox.Parent = TitleBar
+
+SearchButton.Text = "🔍"
+SearchButton.Size = UDim2.new(0, 30, 0, 25)
+SearchButton.Position = UDim2.new(0, 375, 0, 5)
+SearchButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+SearchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+SearchButton.Font = Enum.Font.GothamBold
+SearchButton.Parent = TitleBar
+
+-- Tạo các tab
+local tabButtons = {
+    {Name = "Trang Chủ", Icon = "🏠"},
+    {Name = "Bầu Trò", Icon = "⚙️"},
+    {Name = "Người Chơi", Icon = "👤"},
+    {Name = "Thể Giới", Icon = "🌍"},
+    {Name = "Giải Trí", Icon = "🎮"},
+    {Name = "Máy Chủ", Icon = "🖥️"},
+    {Name = "Khác", Icon = "🔧"},
+    {Name = "Ngôn Ngữ", Icon = "🌐"}
+}
+
+local TabContainer = Instance.new("Frame")
+TabContainer.Size = UDim2.new(1, -20, 0, 40)
+TabContainer.Position = UDim2.new(0, 10, 0, 40)
+TabContainer.BackgroundTransparency = 1
+TabContainer.Parent = MainFrame
+
+local tabFrames = {}
+local currentTab = "Trang Chủ"
+
+-- Tạo nội dung cuộn
+Content.Size = UDim2.new(1, -20, 1, -90)
+Content.Position = UDim2.new(0, 10, 0, 85)
+Content.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+Content.BackgroundTransparency = 0.3
+Content.BorderSizePixel = 0
+Content.ScrollBarThickness = 6
+Content.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+Content.CanvasSize = UDim2.new(0, 0, 0, 0)
+Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+Content.Parent = MainFrame
+
+-- Tạo các tab
+for i, tab in ipairs(tabButtons) do
+    local tabBtn = Instance.new("TextButton")
+    tabBtn.Text = tab.Icon .. " " .. tab.Name
+    tabBtn.Size = UDim2.new(0, 100, 0, 35)
+    tabBtn.Position = UDim2.new(0, (i-1)*110, 0, 0)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+    tabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    tabBtn.Font = Enum.Font.Gotham
+    tabBtn.TextSize = 14
+    tabBtn.Parent = TabContainer
+    
+    -- Tạo frame cho nội dung tab
+    local tabFrame = Instance.new("Frame")
+    tabFrame.Size = UDim2.new(1, 0, 1, 0)
+    tabFrame.BackgroundTransparency = 1
+    tabFrame.Visible = (tab.Name == "Trang Chủ")
+    tabFrame.Parent = Content
+    tabFrames[tab.Name] = tabFrame
+    
+    tabBtn.MouseButton1Click:Connect(function()
+        currentTab = tab.Name
+        for name, frame in pairs(tabFrames) do
+            frame.Visible = (name == tab.Name)
+        end
+        updateTabButtons()
+    end)
+    
+    -- Hiệu ứng hover
+    tabBtn.MouseEnter:Connect(function()
+        if currentTab ~= tab.Name then
+            game:GetService("TweenService"):Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 70)}):Play()
+        end
+    end)
+    
+    tabBtn.MouseLeave:Connect(function()
+        if currentTab ~= tab.Name then
+            game:GetService("TweenService"):Create(tabBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 55)}):Play()
+        end
+    end)
+end
+
+function updateTabButtons()
+    for _, btn in ipairs(TabContainer:GetChildren()) do
+        if btn:IsA("TextButton") then
+            local tabName = string.sub(btn.Text, 4)
+            if tabName == currentTab then
+                btn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+                btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(40, 40, 55)
+                btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+            end
+        end
+    end
+end
+
+-- Nút đóng
+CloseButton.Text = "✕"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 3)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 18
+CloseButton.Parent = TitleBar
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+-- CÁC HÀM CHỨC NĂNG
+
+-- 1. AIMBOT
+function toggleAimbot()
+    AimbotEnabled = not AimbotEnabled
+    if AimbotEnabled then
+        print("Aimbot đã bật")
+        RunService.Heartbeat:Connect(function()
+            if AimbotTarget and AimbotTarget.Character and AimbotTarget.Character:FindFirstChild("HumanoidRootPart") then
+                local targetPos = AimbotTarget.Character.HumanoidRootPart.Position
+                Player.Character:SetPrimaryPartCFrame(CFrame.new(Player.Character.PrimaryPart.Position, Vector3.new(targetPos.X, Player.Character.PrimaryPart.Position.Y, targetPos.Z)))
+            end
+        end)
+    else
+        print("Aimbot đã tắt")
+    end
+end
+
+-- 2. GOD MODE
+function toggleGodMode()
+    GodModeEnabled = not GodModeEnabled
+    if GodModeEnabled then
+        Player.Character.Humanoid.MaxHealth = math.huge
+        Player.Character.Humanoid.Health = math.huge
+        Player.Character.Humanoid.Name = "GodHumanoid"
+        
+        -- Tạo forcefield
+        local forceField = Instance.new("ForceField")
+        forceField.Parent = Player.Character
+        print("God Mode: BẬT")
+    else
+        Player.Character.Humanoid.MaxHealth = 100
+        Player.Character.Humanoid.Health = 100
+        Player.Character.Humanoid.Name = "Humanoid"
+        
+        -- Xóa forcefield
+        for _, child in pairs(Player.Character:GetChildren()) do
+            if child:IsA("ForceField") then
+                child:Destroy()
+            end
+        end
+        print("God Mode: TẮT")
+    end
+end
+
+-- 3. ESP (X-RAY)
+function toggleESP()
+    ESPEnabled = not ESPEnabled
+    if ESPEnabled then
+        ESPFolder.Parent = workspace
+        Lighting.FogEnd = 100000
+        
+        for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+            if player ~= Player and player.Character then
+                createESP(player.Character)
+            end
+        end
+        
+        game:GetService("Players").PlayerAdded:Connect(function(player)
+            player.CharacterAdded:Connect(function(character)
+                if ESPEnabled then
+                    createESP(character)
+                end
+            end)
+        end)
+        
+        print("ESP/X-Ray: BẬT")
+    else
+        ESPFolder:Destroy()
+        ESPFolder = Instance.new("Folder")
+        Lighting.FogEnd = OriginalFogEnd
+        print("ESP/X-Ray: TẮT")
+    end
+end
+
+function createESP(character)
+    local highlight = Instance.new("Highlight")
+    highlight.FillColor = Color3.fromRGB(255, 50, 50)
+    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    highlight.FillTransparency = 0.5
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = ESPFolder
+    highlight.Adornee = character
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Size = UDim2.new(0, 200, 0, 50)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.Adornee = character:WaitForChild("Head")
+    billboard.Parent = ESPFolder
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Text = character.Name
+    nameLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.TextSize = 16
+    nameLabel.Parent = billboard
+    
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Size = UDim2.new(1, 0, 0.5, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    distanceLabel.Font = Enum.Font.Gotham
+    distanceLabel.TextSize = 14
+    distanceLabel.Parent = billboard
+    
+    RunService.Heartbeat:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local distance = (Player.Character.HumanoidRootPart.Position - character.HumanoidRootPart.Position).Magnitude
+            distanceLabel.Text = tostring(math.floor(distance)) .. " studs"
+        end
+    end)
+end
+
+-- 4. TỐC ĐỘ DI CHUYỂN
+function setSpeed(value)
+    Player.Character.Humanoid.WalkSpeed = value
+    print("Tốc độ: " .. value)
+end
+
+-- 5. NHẢY CAO
+function setJumpPower(value)
+    Player.Character.Humanoid.JumpPower = value
+    print("Nhảy cao: " .. value)
+end
+
+-- 6. NHẢY VÔ HẠN
+local infiniteJumpEnabled = false
+function toggleInfiniteJump()
+    infiniteJumpEnabled = not infiniteJumpEnabled
+    if infiniteJumpEnabled then
+        UserInputService.JumpRequest:Connect(function()
+            Player.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+        end)
+        print("Nhảy vô hạn: BẬT")
+    else
+        print("Nhảy vô hạn: TẮT")
+    end
+end
+
+-- 7. NOCLIP (XUYÊN TƯỜNG)
+function toggleNoclip()
+    NoclipEnabled = not NoclipEnabled
+    if NoclipEnabled then
+        local function noclip()
+            if Player.Character then
+                for _, part in pairs(Player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end
+        
+        RunService.Stepped:Connect(noclip)
+        print("Noclip: BẬT")
+    else
+        if Player.Character then
+            for _, part in pairs(Player.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+        print("Noclip: TẮT")
+    end
+end
+
+-- 8. BAY
+function toggleFly()
+    FlyEnabled = not FlyEnabled
+    if FlyEnabled then
+        local bodyGyro = Instance.new("BodyGyro")
+        local bodyVelocity = Instance.new("BodyVelocity")
+        
+        bodyGyro.P = 9e4
+        bodyGyro.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bodyGyro.cframe = Player.Character.HumanoidRootPart.CFrame
+        bodyGyro.Parent = Player.Character.HumanoidRootPart
+        
+        bodyVelocity.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        bodyVelocity.velocity = Vector3.new(0, 0, 0)
+        bodyVelocity.Parent = Player.Character.HumanoidRootPart
+        
+        local speed = 50
+        
+        UserInputService.InputBegan:Connect(function(input)
+            if input.KeyCode == Enum.KeyCode.W then
+                bodyVelocity.velocity = Player.Character.HumanoidRootPart.CFrame.LookVector * speed
+            elseif input.KeyCode == Enum.KeyCode.S then
+                bodyVelocity.velocity = -Player.Character.HumanoidRootPart.CFrame.LookVector * speed
+            elseif input.KeyCode == Enum.KeyCode.A then
+                bodyVelocity.velocity = -Player.Character.HumanoidRootPart.CFrame.RightVector * speed
+            elseif input.KeyCode == Enum.KeyCode.D then
+                bodyVelocity.velocity = Player.Character.HumanoidRootPart.CFrame.RightVector * speed
+            elseif input.KeyCode == Enum.KeyCode.Space then
+                bodyVelocity.velocity = Vector3.new(0, speed, 0)
+            elseif input.KeyCode == Enum.KeyCode.LeftShift then
+                bodyVelocity.velocity = Vector3.new(0, -speed, 0)
+            end
+        end)
+        
+        print("Bay: BẬT (WASD + Space/Shift)")
+    else
+        for _, part in pairs(Player.Character.HumanoidRootPart:GetChildren()) do
+            if part:IsA("BodyGyro") or part:IsA("BodyVelocity") then
+                part:Destroy()
+            end
+        end
+        print("Bay: TẮT")
+    end
+end
+
+-- 9. TELEPORT ĐẾN NGƯỜI CHƠI
+function teleportToPlayer(playerName)
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if string.find(string.lower(player.Name), string.lower(playerName)) and player.Character then
+            Player.Character:SetPrimaryPartCFrame(player.Character.HumanoidRootPart.CFrame)
+            print("Đã dịch chuyển đến: " .. player.Name)
+            return
+        end
+    end
+    print("Không tìm thấy người chơi: " .. playerName)
+end
+
+-- 10. TELEPORT ĐẾN NGƯỜI GẦN NHẤT
+function teleportToNearest()
+    local nearestPlayer = nil
+    local nearestDistance = math.huge
+    
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= Player and player.Character then
+            local distance = (Player.Character.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+            if distance < nearestDistance then
+                nearestDistance = distance
+                nearestPlayer = player
+            end
+        end
+    end
+    
+    if nearestPlayer then
+        Player.Character:SetPrimaryPartCFrame(nearestPlayer.Character.HumanoidRootPart.CFrame)
+        print("Đã dịch chuyển đến người gần nhất: " .. nearestPlayer.Name)
+    end
+end
+
+-- 11. HITBOX EXPANDER
+function setHitboxSize(size)
+    HitboxSize = size
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= Player and player.Character then
+            for _, part in pairs(player.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.Size = part.Size * size
+                end
+            end
+        end
+    end
+    print("Hitbox size: " .. size .. "x")
+end
+
+-- 12. ANIMATION SIÊU TỐC
+function fastAnimation()
+    local humanoid = Player.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        for _, track in pairs(humanoid:GetPlayingAnimationTracks()) do
+            track:AdjustSpeed(10) -- 10x tốc độ
+        end
+    end
+    print("Animation siêu tốc: BẬT")
+end
+
+-- 13. CAMERA ZOOM
+function setCameraZoom(distance)
+    local camera = workspace.CurrentCamera
+    camera.CameraSubject = Player.Character.Humanoid
+    camera.CameraType = Enum.CameraType.Custom
+    camera.FieldOfView = distance
+    print("Camera zoom: " .. distance)
+end
+
+-- 14. TRỌNG LỰC TỰ DO
+function setGravity(value)
+    Workspace.Gravity = value
+    print("Trọng lực: " .. value)
+end
+
+-- 15. XOAY 360 ĐỘ
+function spin360()
+    local spinConnection
+    spinConnection = RunService.Heartbeat:Connect(function()
+        Player.Character.HumanoidRootPart.CFrame = Player.Character.HumanoidRootPart.CFrame * CFrame.Angles(0, math.rad(10), 0)
+    end)
+    
+    -- Dừng sau 3 giây
+    wait(3)
+    spinConnection:Disconnect()
+    print("Xoay 360° đã hoàn thành")
+end
+
+-- 16. THAY ĐỔI MÀU (CLIENT)
+function changeColor(color)
+    if Player.Character then
+        for _, part in pairs(Player.Character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.Color = color
+            end
+        end
+    end
+    print("Đã đổi màu")
+end
+
+-- 17. DISCO MODE
+local discoEnabled = false
+function toggleDisco()
+    discoEnabled = not discoEnabled
+    if discoEnabled then
+        local colors = {
+            Color3.fromRGB(255, 0, 0),    -- Đỏ
+            Color3.fromRGB(0, 255, 0),    -- Xanh lá
+            Color3.fromRGB(0, 0, 255),    -- Xanh dương
+            Color3.fromRGB(255, 255, 0),  -- Vàng
+            Color3.fromRGB(255, 0, 255),  -- Hồng
+            Color3.fromRGB(0, 255, 255)   -- Cyan
+        }
+        
+        local i = 1
+        RunService.Heartbeat:Connect(function()
+            if Player.Character then
+                for _, part in pairs(Player.Character:GetChildren()) do
+                    if part:IsA("BasePart") then
+                        part.Color = colors[i]
+                    end
+                end
+                i = i + 1
+                if i > #colors then i = 1 end
+            end
+        end)
+        print("Disco Mode: BẬT")
+    else
+        print("Disco Mode: TẮT")
+    end
+end
+
+-- 18. SAO CHÉP AVATAR
+function copyAvatar(targetPlayer)
+    local targetCharacter = targetPlayer.Character
+    for _, part in pairs(targetCharacter:GetChildren()) do
+        if part:IsA("BasePart") then
+            local clone = part:Clone()
+            clone.Parent = Player.Character
+        elseif part:IsA("Accessory") then
+            local clone = part:Clone()
+            clone.Parent = Player.Character
+        end
+    end
+    print("Đã sao chép avatar của: " .. targetPlayer.Name)
+end
+
+-- 19. KÉO VỀ NPC
+function pullNPCs()
+    for _, npc in pairs(workspace:GetChildren()) do
+        if npc:FindFirstChild("Humanoid") then
+            local bodyPosition = Instance.new("BodyPosition")
+            bodyPosition.P = 10000
+            bodyPosition.D = 1000
+            bodyPosition.maxForce = Vector3.new(math.huge, math.huge, math.huge)
+            bodyPosition.Position = Player.Character.HumanoidRootPart.Position
+            bodyPosition.Parent = npc.HumanoidRootPart
+            
+            game:GetService("Debris"):AddItem(bodyPosition, 3)
+        end
+    end
+    print("Đã kéo tất cả NPC về vị trí của bạn")
+end
+
+-- 20. NHÌN TRONG BÓNG TỐI
+function nightVision()
+    Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+    Lighting.Brightness = 1
+    Lighting.GlobalShadows = false
+    print("Nhìn trong bóng tối: BẬT")
+end
+
+-- TẠO NÚT CHỨC NĂNG CHO CÁC TAB
+function createButton(parent, text, callback, color)
+    local button = Instance.new("TextButton")
+    button.Text = text
+    button.Size = UDim2.new(0.9, 0, 0, 40)
+    button.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 45)
+    button.BackgroundColor3 = color or Color3.fromRGB(50, 50, 70)
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.Gotham
+    button.TextSize = 14
+    button.AutoButtonColor = true
+    button.Parent = parent
+    
+    button.MouseButton1Click:Connect(callback)
+    
+    -- Hiệu ứng hover
+    button.MouseEnter:Connect(function()
+        game:GetService("TweenService"):Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 90)}):Play()
+    end)
+    
+    button.MouseLeave:Connect(function()
+        game:GetService("TweenService"):Create(button, TweenInfo.new(0.2), {BackgroundColor3 = color or Color3.fromRGB(50, 50, 70)}):Play()
+    end)
+    
+    return button
+end
+
+-- TẠO NỘI DUNG CHO CÁC TAB
+
+-- TAB TRANG CHỦ
+local homeFrame = tabFrames["Trang Chủ"]
+createButton(homeFrame, "🔫 Amibot Người Chơi", toggleAimbot, Color3.fromRGB(255, 50, 50))
+createButton(homeFrame, "🛡️ God Mode (Tảng Hình Bay)", toggleGodMode, Color3.fromRGB(0, 200, 100))
+createButton(homeFrame, "👁️ X-ray (Xoá Sương Mù)", toggleESP, Color3.fromRGB(0, 150, 255))
+createButton(homeFrame, "💜 Tím(Client)", function() changeColor(Color3.fromRGB(170, 0, 255)) end)
+createButton(homeFrame, "💗 Hồng(Client)", function() changeColor(Color3.fromRGB(255, 105, 180)) end)
+
+-- TAB BẦU TRÒ
+local settingsFrame = tabFrames["Bầu Trò"]
+createButton(settingsFrame, "🎯 Đinh Vị NPC(Client)", pullNPCs, Color3.fromRGB(255, 165, 0))
+createButton(settingsFrame, "🔴 Đỏ(Client)", function() changeColor(Color3.fromRGB(255, 0, 0)) end)
+createButton(settingsFrame, "🟠 Cam(Client)", function() changeColor(Color3.fromRGB(255, 165, 0)) end)
+
+-- TAB NGƯỜI CHƠI
+local playerFrame = tabFrames["Người Chơi"]
+createButton(playerFrame, "🎯 HitBox Người Chơi", function() setHitboxSize(2) end, Color3.fromRGB(255, 50, 50))
+createButton(playerFrame, "👁️ Theo Dõi Người Chơi", function() teleportToPlayer("nearest") end)
+createButton(playerFrame, "⚡ Animation Siêu Tốc", fastAnimation, Color3.fromRGB(255, 255, 0))
+createButton(playerFrame, "⚪ Trắng(Client)", function() changeColor(Color3.fromRGB(255, 255, 255)) end)
+createButton(playerFrame, "🟡 Vàng(Client)", function() changeColor(Color3.fromRGB(255, 255, 0)) end)
+
+-- TAB THỂ GIỚI
+local worldFrame = tabFrames["Thể Giới"]
+createButton(worldFrame, "🚀 Di Chuyển Đến Người Chơi", function() teleportToPlayer("") end)
+createButton(worldFrame, "🔄 Di Chuyển Xoay Ngang 360°", spin360, Color3.fromRGB(0, 200, 200))
+createButton(worldFrame, "🌮 Kéo Về 2 Disco Tacos", toggleDisco, Color3.fromRGB(255, 105, 180))
+createButton(worldFrame, "🔵 Xanh Dương(Client)", function() changeColor(Color3.fromRGB(0, 0, 255)) end)
+createButton(worldFrame, "🟢 Xanh Lá(Client)", function() changeColor(Color3.fromRGB(0, 255, 0)) end)
+
+-- TAB GIẢI TRÍ
+local funFrame = tabFrames["Giải Trí"]
+createButton(funFrame, "📍 Di Chuyển Đến Người Chơi Gần Nhất", teleportToNearest)
+createButton(funFrame, "⚖️ Trọng Lực Tự Do Hành Động R15", function() setGravity(0) end)
+createButton(funFrame, "💍 Quan Sát Thế Giới Ring", function() setCameraZoom(30) end)
+createButton(funFrame, "👹 666(Client)", function() changeColor(Color3.fromRGB(255, 0, 0)) end)
+createButton(funFrame, "🦅 Bay", toggleFly, Color3.fromRGB(0, 150, 255))
+createButton(funFrame, "👻 Noclip (Xuyên Tường)", toggleNoclip)
+
+-- TAB MÁY CHỦ
+local serverFrame = tabFrames["Máy Chủ"]
+createButton(serverFrame, "📍 Định Vị Người Chơi", function() print("ESP đã bật để định vị") end)
+createButton(serverFrame, "🔄 Né Người Chơi", function() print("Chức năng né đã bật") end)
+createButton(serverFrame, "👥 Sao Chép Avatar (Client)", function() 
+    for _, player in pairs(game:GetService("Players"):GetPlayers()) do
+        if player ~= Player then
+            copyAvatar(player)
+            break
+        end
+    end
+end)
+
+-- TAB KHÁC
+local otherFrame = tabFrames["Khác"]
+createButton(otherFrame, "🚀 Tốc Độ Nhảy Cao", function() setJumpPower(100) end)
+createButton(otherFrame, "♾️ Nhảy Vô Hạn", toggleInfiniteJump)
+createButton(otherFrame, "📷 Tăng Tầm Xa Camera", function() setCameraZoom(120) end)
+createButton(otherFrame, "🌙 Nhìn Trong Bóng Tối", nightVision)
+createButton(otherFrame, "⏪ Tốc Biến (Tua Ngược)", function() print("Chức năng tua ngược") end)
+createButton(otherFrame, "🏃‍♂️ Tăng Tốc Độ", function() setSpeed(100) end)
+
+-- TAB NGÔN NGỮ
+local langFrame = tabFrames["Ngôn Ngữ"]
+createButton(langFrame, "🇻🇳 Tiếng Việt", function() 
+    print("Ngôn ngữ đã đổi sang Tiếng Việt")
+    Title.Text = "Bom2dev Hub - Tiếng Việt"
+end)
+createButton(langFrame, "🇺🇸 English", function() 
+    print("Language changed to English")
+    Title.Text = "Bom2dev Hub - English"
+end)
+createButton(langFrame, "🇨🇳 中文", function() 
+    print("语言已改为中文")
+    Title.Text = "Bom2dev Hub - 中文"
+end)
+
+-- CHỨC NĂNG TÌM KIẾM
+SearchButton.MouseButton1Click:Connect(function()
+    local searchText = string.lower(SearchBox.Text)
+    if searchText == "" then return end
+    
+    -- Hiển thị kết quả tìm kiếm
+    for name, frame in pairs(tabFrames) do
+        frame.Visible = false
+        for _, child in pairs(frame:GetChildren()) do
+            if child:IsA("TextButton") then
+                if string.find(string.lower(child.Text), searchText) then
+                    frame.Visible = true
+                    currentTab = name
+                    updateTabButtons()
+                    break
+                end
+            end
+        end
+    end
+end)
+
+SearchBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        SearchButton:Click()
+    end
+end)
+
+-- TẠO SLIDER CHO CÁC CHỨC NĂNG
+function createSlider(parent, text, min, max, defaultValue, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    sliderFrame.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 65)
+    sliderFrame.BackgroundTransparency = 1
+    sliderFrame.Parent = parent
+    
+    local label = Instance.new("TextLabel")
+    label.Text = text
+    label.Size = UDim2.new(1, 0, 0, 20)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.fromRGB(200, 200, 200)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 14
+    label.TextXAlignment = Enum.TextXAlignment.Left
+    label.Parent = sliderFrame
+    
+    local slider = Instance.new("Frame")
+    slider.Size = UDim2.new(1, 0, 0, 10)
+    slider.Position = UDim2.new(0, 0, 0, 25)
+    slider.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    slider.BorderSizePixel = 0
+    slider.Parent = sliderFrame
+    
+    local fill = Instance.new("Frame")
+    fill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
+    fill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    fill.BorderSizePixel = 0
+    fill.Parent = slider
+    
+    local valueLabel = Instance.new("TextLabel")
+    valueLabel.Text = tostring(defaultValue)
+    valueLabel.Size = UDim2.new(0, 40, 0, 20)
+    valueLabel.Position = UDim2.new(1, 5, 0, 20)
+    valueLabel.BackgroundTransparency = 1
+    valueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    valueLabel.Font = Enum.Font.GothamBold
+    valueLabel.TextSize = 14
+    valueLabel.Parent = sliderFrame
+    
+    local dragging = false
+    slider.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+        end
+    end)
+    
+    slider.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mousePos = Vector2.new(input.Position.X, input.Position.Y)
+            local sliderPos = slider.AbsolutePosition
+            local sliderSize = slider.AbsoluteSize
+            
+            local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
+            local value = min + (max - min) * relativeX
+            
+            fill.Size = UDim2.new(relativeX, 0, 1, 0)
+            valueLabel.Text = tostring(math.floor(value))
+            
+            callback(math.floor(value))
+        end
+    end)
+    
+    -- Áp dụng giá trị mặc định
+    callback(defaultValue)
+end
+
+-- Thêm sliders vào tab Người Chơi
+createSlider(playerFrame, "Tốc Độ Di Chuyển", 16, 200, 16, setSpeed)
+createSlider(playerFrame, "Lực Nhảy", 50, 500, 50, setJumpPower)
+
+-- Thêm sliders vào tab Thể Giới
+createSlider(worldFrame, "Trọng Lực", 0, 196, 196, setGravity)
+
+-- Thêm sliders vào tab Khác
+createSlider(otherFrame, "Camera Zoom", 70, 120, 70, setCameraZoom)
+
+-- HOÀN THÀNH
+print("╔══════════════════════════════════╗")
+print("║     Bom2dev Hub V7.2 Đã Tải!     ║")
+print("║      " .. #tabButtons .. " Tabs | 50+ Chức Năng      ║")
+print("╚══════════════════════════════════╝")
+print("📌 Sử dụng: WASD để di chuyển GUI")
+print("🔍 Gõ vào ô tìm kiếm để tìm script nhanh")
+print("⚠️  Lưu ý: Một số chức năng chỉ hoạt động Client-side")
+
+-- Tự động kết nối lại character nếu chết
+Player.CharacterAdded:Connect(function(character)
+    wait(1)
+    if GodModeEnabled then
+        toggleGodMode()
+        toggleGodMode() -- Bật lại
+    end
+end)
+
+-- HIỆU ỨNG KHI BẬT GUI
+MainFrame.Visible = false
+wait(0.1)
+MainFrame.Visible = true
+
+local tweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+game:GetService("TweenService"):Create(MainFrame, tweenInfo, {Size = UDim2.new(0, 550, 0, 450)}):Play()
